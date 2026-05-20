@@ -1,0 +1,383 @@
+#root {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+/* Navigation */
+
+.navigation {
+  width: 100%;
+  background-color: #06d6f1;
+  color: white;
+  padding: 15px;
+}
+
+.navigation ul {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  gap: 200px;
+  margin: 10px 100px 10px 100px;
+  padding: 0;
+}
+
+.navigation a {
+  color: white;
+  text-decoration: none;
+}
+.navigation a:hover{
+  color: rgb(155, 233, 11);
+  text-decoration: none;
+}
+
+
+
+
+/*Home page styles*/
+
+.TitleText {
+  width: 100%;             /* full width of parent */
+  text-align: center;       /* center text */
+  background-color: rgb(13, 202, 98);   /* grey background */
+  padding: 10px 0 30px 0;          /* vertical space */
+  box-sizing: border-box;   /* include padding in width */
+}
+
+/*Disc Filters div*/
+.disc-filter-div {
+  background-color: red;
+  width: 200px;
+  padding: 10px;
+}
+
+.brand-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.brand-option {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 50px;
+}
+
+.speed-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.speed-option {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 50px;
+}
+
+.glide-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.glide-option {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 50px;
+}
+
+.turn-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.turn-option {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 50px;
+}
+
+
+.fade-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.fade-option {
+  width: 100%;
+  padding: 2px;
+  margin-bottom: 50px;
+}
+
+.stability-filter {
+  background-color: blue;
+  width: 100%;
+  padding: 2px;
+}
+
+.stability-option {
+  width: 100%;
+  padding: 2px;
+}
+
+.disc-filter-div {
+  background-color: red;
+  width: 220px;
+  padding: 10px;
+}
+
+.brand-filter,
+.speed-filter,
+.glide-filter,
+.turn-filter,
+.fade-filter,
+.stability-filter {
+  display: block;
+  width: 100%;
+  padding: 2px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  background-color: blue;
+}
+
+.brand-option,
+.stability-option {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 16px;
+}
+
+.range-track {
+  width: 100%;
+  height: 6px;
+  background: #ddd;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+
+.range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #222;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Grid layout: 4 discs per row */
+.disc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Individual disc card */
+.disc-card {
+  background: #222;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* Disc image styling */
+.disc-image {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+
+/* Link styling */
+.disc-link {
+  display: block;
+  margin-top: 10px;
+  color: #646cff;
+}
+
+/* Your Bag */
+
+.AddButtonBag {
+  margin-left: 30px;
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #0bf61a;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.AddButtonBag:hover{
+  background-color: purple;
+}
+
+.search-disc-image {
+  margin-right: 30px;
+  margin-top: 30px;
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+/* Pagination */
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.pagination-button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #222;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #444;
+}
+
+.pagination-button:disabled {
+  background-color: #888;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-weight: bold;
+}
+
+/* Course Page */
+
+.course-page {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.course-info {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.course-map-container {
+  flex: 2;
+  min-width: 300px;
+}
+
+.course-svg {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+}
+
+
+/* GPS Status Bar */
+.gps-status {
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.status-loading {
+  color: #b45309;
+  background: #fef3c7;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.status-error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.status-ok {
+  color: #065f46;
+  background: #d1fae5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Distance Info Panel */
+.distance-info {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+  padding: 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.distance-item strong {
+  color: #374151;
+  margin-right: 4px;
+}
+
+/* User Position Pulse Animation */
+.pulse-ring {
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    r: 8;
+    opacity: 1;
+  }
+  100% {
+    r: 20;
+    opacity: 0;
+  }
+}
+
+/* Map Container */
+.course-map-container {
+  flex: 2;
+  min-width: 300px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.map-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.course-svg {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+}

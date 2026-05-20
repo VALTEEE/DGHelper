@@ -1,0 +1,339 @@
+discs site sort the discs by
+ -most known brands
+-disc type
+-disc speed
+-glide
+
+Make like innova button that tells api to fetch innova discs and next options to specify to api
+
+No button for the rarer discs so it doesn't show them
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. Best approach: Use an existing disc golf dataset
+
+Some websites already maintain disc databases.
+
+Two popular sources developers use:
+
+TryDiscs API
+
+Infinite Discs database
+
+These contain:
+
+disc names
+
+flight numbers
+
+manufacturer
+
+stability
+
+images (sometimes)
+
+Typical data looks like:
+
+{
+  "name": "Destroyer",
+  "brand": "Innova",
+  "speed": 12,
+  "glide": 5,
+  "turn": -1,
+  "fade": 3,
+  "category": "Distance Driver"
+}
+
+You can store this in your own backend database.
+
+Database example:
+
+discs
+---------------------------------
+id
+name
+brand
+speed
+glide
+turn
+fade
+category
+image_url
+description
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. Images: Don't host them manually
+
+Images are usually the biggest pain.
+
+Best options:
+
+Option A (easy)
+
+Store image URLs from manufacturers
+
+Example:
+
+image_url:
+https://infinitediscs.com/images/discs/destroyer.jpg
+
+Then your frontend just loads them.
+
+Option B (better long term)
+
+Download the images and store them in:
+
+AWS S3
+
+Cloudflare R2
+
+Supabase storage
+
+Then you control them.
+
+
+
+
+
+
+
+
+3. Explaining why a disc is recommended
+
+This is where your app becomes interesting.
+
+Example logic:
+
+Wind conditions:
+
+Wind	Disc type
+Headwind	Overstable
+Tailwind	Understable
+Calm	Neutral
+
+Example:
+
+Wind: 15 km/h headwind
+
+Recommendation:
+
+Innova Destroyer
+
+Explanation:
+
+Strong headwind requires an overstable disc so it won't flip over during flight.
+
+You can generate explanations dynamically:
+
+if (wind > 12 && windDirection === "headwind") {
+  recommend = "overstable distance driver"
+}
+
+
+
+
+
+
+4. Automatically selecting discs
+
+You can filter your database.
+
+Example:
+
+SELECT * FROM discs
+WHERE speed >= 9
+AND fade >= 2
+
+This returns overstable drivers.
+
+Then show 3 suggestions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+5. Make the dataset manageable
+
+Instead of adding 1000 discs, start with:
+
+Top 50–100 most popular discs
+
+Examples:
+
+Drivers
+
+Destroyer
+
+Wraith
+
+Zeus
+
+Fairway
+
+Teebird
+
+Leopard
+
+Midrange
+
+Buzzz
+
+Roc
+
+Putters
+
+Aviar
+
+Luna
+
+That is enough for MVP version.
+
+You can expand later.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6. A really cool feature idea
+
+Your app could include:
+
+"What disc should I throw?"
+
+Inputs:
+
+wind speed
+
+wind direction
+
+player skill level
+
+distance to basket
+
+Output:
+
+Recommended Disc: Destroyer
+Reason: Strong headwind requires a stable driver
+Alternative: Firebird
+
+This is where your logic + database becomes powerful.
+
+
+
+
+
+
+
+
+
+
+7. Future AI feature (very cool)
+
+Later you could add:
+
+User input:
+
+"Wind is strong and hole is 110m"
+
+AI responds:
+
+Use an overstable fairway driver like a Firebird to prevent turnover.
+
+That would make your app feel very smart.
+
+
+
+
+
+
+8. Suggested tech stack
+
+For a project like this:
+
+Frontend
+
+React / Next.js
+
+Backend
+
+Node.js (Express or Fastify)
+
+Database
+
+PostgreSQL or Supabase
+
+Weather
+
+OpenWeather API
+
+Disc database
+
+your own table
+
+
+
+
+
+
+
+
+
+
+
+
+One last thing (important)
+
+This project actually has real startup potential if done well. Disc golfers love tools.
+
+If you combine:
+
+weather
+
+disc recommendations
+
+course info
+
+score tracking
+
+you could eventually turn it into a very cool niche app.
