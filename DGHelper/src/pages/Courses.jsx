@@ -1,4 +1,4 @@
-import { tampereDGC } from "../../data/courses/tampere-dgc";
+import { tampereDGC } from "../data/courses/tampere-dgc.js";
 import CourseMap from "../components/CourseMap";
 import CourseInfo from "../components/CourseInfo";
 import { useState } from "react";
