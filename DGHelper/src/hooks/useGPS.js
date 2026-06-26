@@ -31,6 +31,7 @@ export function useGPS() {
 
     // Error callback
     const handleError = (err) => {
+      console.error("GPS ERROR:", err.code, err.message);
       setError(getErrorMessage(err.code));
       setLoading(false);
     };

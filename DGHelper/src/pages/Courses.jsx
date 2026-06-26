@@ -1,7 +1,7 @@
 import { tampereDGC } from "../data/courses/tampere-dgc.js";
 import CourseMap from "../components/CourseMap";
 import CourseInfo from "../components/CourseInfo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CoursePage() {
   const course = tampereDGC;
@@ -9,7 +9,8 @@ export default function CoursePage() {
   const [gpsPermission, setGpsPermission] = useState("prompt"); // prompt, granted, denied
 
   // Request GPS permission on mount
-  useState(() => {
+    // Request GPS permission on mount
+  useEffect(() => {
     if ("permissions" in navigator) {
       navigator.permissions.query({ name: "geolocation" })
         .then((result) => {

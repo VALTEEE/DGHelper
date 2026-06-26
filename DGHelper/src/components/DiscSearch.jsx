@@ -2,6 +2,7 @@ export default function DiscSearch({
   searchTerm,
   setSearchTerm,
   searchResults,
+  allDiscs,
   addToCollection
 }) {
 
