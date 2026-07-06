@@ -1,15 +1,18 @@
 import { tampereDGC } from "../data/courses/tampere-dgc.js";
 import CourseMap from "../components/CourseMap";
 import CourseInfo from "../components/CourseInfo";
+import DiscRecommendation from "../components/DiscRecommendation";
 import { useState, useEffect } from "react";
 
 export default function CoursePage() {
   const course = tampereDGC;
   const [currentHole, setCurrentHole] = useState(1);
-  const [gpsPermission, setGpsPermission] = useState("prompt"); // prompt, granted, denied
+  const [gpsPermission, setGpsPermission] = useState("prompt");
 
-  // Request GPS permission on mount
-    // Request GPS permission on mount
+  const ownedDiscs = JSON.parse(localStorage.getItem("ownedDiscs") || "[]");
+  const currentHoleData = tampereDGC.holes.find(h => h.number === currentHole);
+  const holeDistance = currentHoleData?.distanceMeters || 0;
+
   useEffect(() => {
     if ("permissions" in navigator) {
       navigator.permissions.query({ name: "geolocation" })
@@ -24,7 +27,6 @@ export default function CoursePage() {
 
   return (
     <div className="course-page">
-      {/* GPS Permission Notice */}
       {gpsPermission === "denied" && (
         <div className="permission-banner" style={{
           background: "#fef3c7",
@@ -38,12 +40,18 @@ export default function CoursePage() {
         </div>
       )}
 
-      <CourseInfo 
-        course={course} 
-        currentHole={currentHole} 
-        onHoleChange={setCurrentHole} 
+      <CourseInfo
+        course={course}
+        currentHole={currentHole}
+        onHoleChange={setCurrentHole}
       />
+
       <CourseMap course={course} currentHole={currentHole} />
+
+      <DiscRecommendation
+        holeDistance={holeDistance}
+        ownedDiscs={ownedDiscs}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import Discs from "./pages/Discs";
 import YourBag from "./pages/YourBag";
 import Courses from "./pages/Courses";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import { useAuth } from "./context/AuthContext";
 
 const titleMap = {
@@ -44,6 +45,12 @@ function Navigation({ onOpenLogin }) {
         <li><Link to="/discs">Discs</Link></li>
         <li><Link to="/your-bag">Your Bag</Link></li>
         <li><Link to="/courses">Courses</Link></li>
+        {isAuthenticated && (
+          <li><Link to="/profile">Profile</Link></li>
+        )}
+      </ul>
+
+      <ul className="nav-auth">
         {!isAuthenticated && (
          <button
            type="button"
@@ -65,7 +72,7 @@ function Navigation({ onOpenLogin }) {
             </button>
           </li>
         ) : (
-          <li><Link to="/login">Log in</Link></li>
+          null
         )}
       </ul>
     </nav>
@@ -88,6 +95,7 @@ function App() {
         <Route path="/discs" element={<Discs />} />
         <Route path="/your-bag" element={<YourBag />} />
         <Route path="/courses" element={<Courses />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
       </Routes>
 

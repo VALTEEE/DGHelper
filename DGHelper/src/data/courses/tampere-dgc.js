@@ -19,7 +19,7 @@ export const tampereDGC = {
 
   holes: [
     {
-      number: 1, par: 3, distanceMeters: 0,
+      number: 1, par: 3, distanceMeters: 95,
       teePad: { lat: 61.504354, lng: 23.860956 },
       basket: { lat: 61.505113, lng: 23.861309 },
       imageCalibration: {
@@ -49,7 +49,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 2, par: 3, distanceMeters: 0,
+      number: 2, par: 3, distanceMeters: 141,
       teePad: { lat: 61.505159, lng: 23.860961 },
       basket: { lat: 61.506353, lng: 23.861415 },
       imageCalibration: {
@@ -70,7 +70,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 3, par: 3, distanceMeters: 0,
+      number: 3, par: 3, distanceMeters: 124,
       teePad: { lat: 61.506522, lng: 23.861261 },
       basket: { lat: 61.506801, lng: 23.863129 },
       imageCalibration: {
@@ -91,7 +91,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 4, par: 3, distanceMeters: 0,
+      number: 4, par: 3, distanceMeters: 94,
       teePad: { lat: 61.507497, lng: 23.863125 },
       basket: { lat: 61.507424, lng: 23.861508 },
       imageCalibration: {
@@ -114,7 +114,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 5, par: 3, distanceMeters: 0,
+      number: 5, par: 3, distanceMeters: 118,
       teePad: { lat: 61.507678, lng: 23.862109 },
       basket: { lat: 61.508470, lng: 23.861881 },
       imageCalibration: {
@@ -136,7 +136,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 6, par: 3, distanceMeters: 0,
+      number: 6, par: 3, distanceMeters: 262,
       teePad: { lat: 61.508275, lng: 23.862904 },
       basket: { lat: 61.510387, lng: 23.862819 },
       imageCalibration: {
@@ -166,7 +166,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 7, par: 3, distanceMeters: 0,
+      number: 7, par: 3, distanceMeters: 110,
       teePad: { lat: 61.510487, lng: 23.863195 },
       basket: { lat: 61.509870, lng: 23.863981 },
       imageCalibration: {
@@ -187,7 +187,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 8, par: 3, distanceMeters: 0,
+      number: 8, par: 3, distanceMeters: 122,
       teePad: { lat: 61.509806, lng: 23.864783 },
       basket: { lat: 61.508917, lng: 23.863643 },
       imageCalibration: {
@@ -210,7 +210,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 9, par: 3, distanceMeters: 0,
+      number: 9, par: 3, distanceMeters: 97,
       teePad: { lat: 61.508756, lng: 23.863672 },
       basket: { lat: 61.508134, lng: 23.864134 },
       imageCalibration: {
@@ -232,7 +232,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 10, par: 3, distanceMeters: 0,
+      number: 10, par: 3, distanceMeters: 225,
       teePad: { lat: 61.507651, lng: 23.864525 },
       basket: { lat: 61.509171, lng: 23.865987 },
       imageCalibration: {
@@ -261,7 +261,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 11, par: 3, distanceMeters: 0,
+      number: 11, par: 3, distanceMeters: 76,
       teePad: { lat: 61.508962, lng: 23.866564 },
       basket: { lat: 61.508526, lng: 23.865754 },
       imageCalibration: {
@@ -281,7 +281,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 12, par: 3, distanceMeters: 0,
+      number: 12, par: 3, distanceMeters: 78,
       teePad: { lat: 61.508069, lng: 23.865276 },
       basket: { lat: 61.507305, lng: 23.865451 },
       imageCalibration: {
@@ -301,7 +301,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 13, par: 3, distanceMeters: 0,
+      number: 13, par: 3, distanceMeters: 199,
       teePad: { lat: 61.507354, lng: 23.865671 },
       basket: { lat: 61.508656, lng: 23.867167 },
       imageCalibration: {
@@ -323,7 +323,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 14, par: 3, distanceMeters: 0,
+      number: 14, par: 3, distanceMeters: 184,
       teePad: { lat: 61.507693, lng: 23.866976 },
       basket: { lat: 61.506646, lng: 23.866287 },
       imageCalibration: {
@@ -343,7 +343,7 @@ export const tampereDGC = {
       obstacles: []
     },
     {
-      number: 15, par: 3, distanceMeters: 0,
+      number: 15, par: 3, distanceMeters: 135,
       teePad: { lat: 61.506789, lng: 23.865651 },
       basket: { lat: 61.505649, lng: 23.865887 },
       imageCalibration: {
@@ -364,7 +364,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 16, par: 3, distanceMeters: 0,
+      number: 16, par: 3, distanceMeters: 192,
       teePad: { lat: 61.505808, lng: 23.865576 },
       basket: { lat: 61.507102, lng: 23.864817 },
       imageCalibration: {
@@ -387,7 +387,7 @@ export const tampereDGC = {
       ]
     },
     {
-      number: 17, par: 3, distanceMeters: 0,
+      number: 17, par: 3, distanceMeters: 107,
       teePad: { lat: 61.506906, lng: 23.863991 },
       basket: { lat: 61.505960, lng: 23.863763 },
       imageCalibration: {
@@ -405,7 +405,7 @@ export const tampereDGC = {
       obstacles: []
     },
     {
-      number: 18, par: 3, distanceMeters: 0,
+      number: 18, par: 3, distanceMeters: 98,
       teePad: { lat: 61.505342, lng: 23.862682 },
       basket: { lat: 61.504623, lng: 23.861810 },
       imageCalibration: {

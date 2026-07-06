@@ -27,4 +27,19 @@ db.exec(`
   );
 `);
 
+// Add new columns to users if they don't exist yet.
+// SQLite doesn't support "ADD COLUMN IF NOT EXISTS" so we use a try/catch.
+const addColumns = [
+  "ALTER TABLE users ADD COLUMN username TEXT",
+  "ALTER TABLE users ADD COLUMN throw_distance INTEGER DEFAULT 0",
+];
+
+for (const sql of addColumns) {
+  try {
+    db.exec(sql);
+  } catch {
+    // Column already exists — safe to ignore
+  }
+}
+
 module.exports = db;

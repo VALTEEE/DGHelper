@@ -2,10 +2,9 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #e2e8f0;
+  background: transparent;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,9 +22,16 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),
+    url('/images/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #e2e8f0;
   min-height: 100vh;
+  margin: 0;
 }
 
 h1 {
@@ -51,19 +57,13 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
   a:hover {
     color: #747bff;
   }
   button {
     background-color: #f9f9f9;
   }
-}
+
 
 
 

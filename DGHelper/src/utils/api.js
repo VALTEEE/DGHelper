@@ -61,3 +61,21 @@ export async function saveBag(ownedDiscs, bags) {
     body: JSON.stringify({ ownedDiscs, bags }),
   });
 }
+
+export async function fetchProfile() {
+  return apiFetch("/profile");
+}
+
+export async function updateProfile(username, throwDistance) {
+  return apiFetch("/profile", {
+    method: "PUT",
+    body: JSON.stringify({ username, throwDistance }),
+  });
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  return apiFetch("/profile/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}

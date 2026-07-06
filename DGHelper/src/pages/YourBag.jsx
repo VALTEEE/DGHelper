@@ -1,3 +1,4 @@
+import allDiscsData from "../data/discs";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import DiscSearch from "../components/DiscSearch";
@@ -18,12 +19,11 @@ export default function YourBag() {
   const [selectedBagId, setSelectedBagId] = useState(null);
   const [bagLoading, setBagLoading] = useState(false);
   const [syncStatus, setSyncStatus] = useState("");
-  const [allDiscs, setAllDiscs] = useState([]);
+  const allDiscs = allDiscsData;
 
   const saveTimeoutRef = useRef(null);
   const hasLoadedRef = useRef(false);
 
-  // Load bag data: from account when logged in, otherwise localStorage
   useEffect(() => {
     hasLoadedRef.current = false;
 
@@ -52,25 +52,17 @@ export default function YourBag() {
 
           setOwnedDiscs(nextOwned);
           setBags(nextBags);
-          if (nextBags.length > 0) {
-            setSelectedBagId(nextBags[0].id);
-          }
+          if (nextBags.length > 0) setSelectedBagId(nextBags[0].id);
         } else {
           const savedOwnedDiscs = localStorage.getItem("ownedDiscs");
           const savedBags = localStorage.getItem("bags");
 
-          if (savedOwnedDiscs) {
-            setOwnedDiscs(JSON.parse(savedOwnedDiscs));
-          } else {
-            setOwnedDiscs([]);
-          }
+          setOwnedDiscs(savedOwnedDiscs ? JSON.parse(savedOwnedDiscs) : []);
 
           if (savedBags) {
             const parsedBags = JSON.parse(savedBags);
             setBags(parsedBags);
-            if (parsedBags.length > 0) {
-              setSelectedBagId(parsedBags[0].id);
-            }
+            if (parsedBags.length > 0) setSelectedBagId(parsedBags[0].id);
           } else {
             setBags([]);
             setSelectedBagId(null);
@@ -88,32 +80,13 @@ export default function YourBag() {
     loadBag();
   }, [isAuthenticated]);
 
-  useEffect(() => {
-  async function loadDiscs() {
-    try {
-      const res = await fetch(
-        "http://localhost:3000/discs?page=1&limit=550"
-      );
+ 
 
-      const data = await res.json();
-
-      setAllDiscs(data.data || []);
-    } catch (error) {
-      console.error("Failed to load discs:", error);
-    }
-  }
-
-  loadDiscs();
-}, []);
-
-  // Persist changes
   useEffect(() => {
     if (!hasLoadedRef.current) return;
 
     if (isAuthenticated) {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
       saveTimeoutRef.current = setTimeout(async () => {
         try {
@@ -126,9 +99,7 @@ export default function YourBag() {
       }, 600);
 
       return () => {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       };
     }
 
@@ -137,27 +108,31 @@ export default function YourBag() {
   }, [ownedDiscs, bags, isAuthenticated]);
 
   useEffect(() => {
-      if (!searchTerm.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-        const results = allDiscs.filter((disc) =>
-        `${disc.brand} ${disc.name}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-     );
-
-        setSearchResults(results.slice(0, 10));
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const results = allDiscs.filter((disc) =>
+      `${disc.brand} ${disc.name}`.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchResults(results.slice(0, 10));
   }, [searchTerm, allDiscs]);
 
-  function addToCollection(disc) {
-    const alreadyOwned = ownedDiscs.some((d) => d.id === disc.id);
-    if (alreadyOwned) return;
-
-    setOwnedDiscs([...ownedDiscs, disc]);
+  // Adds disc to collection and, if a bag is selected, directly to that bag too
+  function handleAddFromSearch(disc) {
+    if (!ownedDiscs.some((d) => d.id === disc.id)) {
+      setOwnedDiscs((prev) => [...prev, disc]);
+    }
+    if (selectedBagId) {
+      setBags((prev) =>
+        prev.map((bag) =>
+          bag.id === selectedBagId && !bag.discIds.includes(disc.id)
+            ? { ...bag, discIds: [...bag.discIds, disc.id] }
+            : bag
+        )
+      );
+    }
     setSearchTerm("");
-    setSearchResults([]);
   }
 
   function removeFromCollection(discId) {
@@ -172,16 +147,18 @@ export default function YourBag() {
 
   function createBag() {
     if (!newBagName.trim()) return;
-
-    const newBag = {
-      id: Date.now(),
-      name: newBagName,
-      discIds: [],
-    };
-
-    setBags([...bags, newBag]);
+    const newBag = { id: Date.now(), name: newBagName, discIds: [] };
+    setBags((prev) => [...prev, newBag]);
     setSelectedBagId(newBag.id);
     setNewBagName("");
+  }
+
+  function deleteBag(bagId) {
+    const remaining = bags.filter((b) => b.id !== bagId);
+    setBags(remaining);
+    if (selectedBagId === bagId) {
+      setSelectedBagId(remaining.length > 0 ? remaining[0].id : null);
+    }
   }
 
   function addDiscToBag(discId) {
@@ -211,49 +188,60 @@ export default function YourBag() {
 
   return (
     <div className="your-bag-page">
-      <h1>Your Bag</h1>
-
-      {!isAuthenticated && (
-        <p className="bag-login-prompt">
-          <Link to="/login">Log in</Link> to save your collection to your account.
-        </p>
-      )}
-
-      {isAuthenticated && syncStatus && (
-        <p className="bag-sync-status">{syncStatus}</p>
-      )}
+      <div className="bag-page-header">
+        <h1>Your Bag</h1>
+        <div className="bag-page-meta">
+          {!isAuthenticated && (
+            <p className="bag-login-prompt">
+              <Link to="/login">Log in</Link> to save your bag to your account.
+            </p>
+          )}
+          {isAuthenticated && syncStatus && (
+            <p className="bag-sync-status">{syncStatus}</p>
+          )}
+        </div>
+      </div>
 
       {bagLoading ? (
-        <p>Loading your bag...</p>
+        <div className="bag-loading">
+          <p>Loading your bag...</p>
+        </div>
       ) : (
-        <>
-          <DiscSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            searchResults={searchResults}
-            allDiscs={allDiscs}
-            addToCollection={addToCollection}
-          />
+        <div className="bag-workspace">
+          {/* Left panel: search + collection */}
+          <div className="search-collection-panel">
+            <DiscSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchResults={searchResults}
+              onAddDisc={handleAddFromSearch}
+              ownedDiscs={ownedDiscs}
+              selectedBag={selectedBag}
+            />
+            <DiscCollection
+              ownedDiscs={ownedDiscs}
+              selectedBag={selectedBag}
+              addDiscToBag={addDiscToBag}
+              removeFromCollection={removeFromCollection}
+            />
+          </div>
 
-          <DiscCollection
-            ownedDiscs={ownedDiscs}
-            selectedBag={selectedBag}
-            addDiscToBag={addDiscToBag}
-            removeFromCollection={removeFromCollection}
-          />
-
-          <BagManager
-            newBagName={newBagName}
-            setNewBagName={setNewBagName}
-            createBag={createBag}
-            bags={bags}
-            selectedBagId={selectedBagId}
-            setSelectedBagId={setSelectedBagId}
-            selectedBag={selectedBag}
-            selectedBagDiscs={selectedBagDiscs}
-            removeDiscFromBag={removeDiscFromBag}
-          />
-        </>
+          {/* Right panel: the bag */}
+          <div className="bag-side-panel">
+            <BagManager
+              newBagName={newBagName}
+              setNewBagName={setNewBagName}
+              createBag={createBag}
+              deleteBag={deleteBag}
+              bags={bags}
+              selectedBagId={selectedBagId}
+              setSelectedBagId={setSelectedBagId}
+              selectedBag={selectedBag}
+              selectedBagDiscs={selectedBagDiscs}
+              removeDiscFromBag={removeDiscFromBag}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

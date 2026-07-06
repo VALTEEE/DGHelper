@@ -39,6 +39,10 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  function updateUser(changes) {
+    setUser((prev) => ({ ...prev, ...changes }));
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -48,6 +52,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}
@@ -57,8 +62,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
