@@ -10,7 +10,14 @@ export default defineConfig({
     proxy: {
       '/auth': 'http://localhost:3000',
       '/bag': 'http://localhost:3000',
-      '/profile': 'http://localhost:3000',
+      '/profile': {
+        target: 'http://localhost:3000',
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) {
+            return '/index.html';
+          }
+        },
+      },
     },
   },
 })

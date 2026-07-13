@@ -126,6 +126,7 @@ export default function CoursePage() {
            ownedDiscs={ownedDiscs}
            weather={weather}
            holeBearing={holeBearing}
+           obstacles={currentHoleData?.obstacles}
 />     
       </div>
     );

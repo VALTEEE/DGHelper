@@ -1,7 +1,8 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { rankDiscsForHole, getThrowRecommendation } from "../utils/flightModel";
 
-export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, holeBearing }) {
+export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, holeBearing, obstacles }) {
   const { user } = useAuth();
   const throwDistance = user?.throw_distance || 0;
   const handedness = user?.throw_handedness || "right";
@@ -9,7 +10,7 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, 
   if (!throwDistance) {
     return (
       <div className="disc-rec-empty">
-        Set your throw distance in your <a href="/profile">profile</a> to get disc recommendations.
+        Set your throw distance in your <Link to="/profile">profile</Link> to get disc recommendations.
       </div>
     );
   }
@@ -17,17 +18,17 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, 
   if (!ownedDiscs || ownedDiscs.length === 0) {
     return (
       <div className="disc-rec-empty">
-        Add discs to your bag in <a href="/your-bag">Your Bag</a> to get recommendations.
+        Add discs to your bag in <Link to="/your-bag">Your Bag</Link> to get recommendations.
       </div>
     );
   }
 
-  const ranked = rankDiscsForHole(ownedDiscs, throwDistance, holeDistance);
+  const ranked = rankDiscsForHole(ownedDiscs, throwDistance, holeDistance, obstacles);
   const top3 = ranked.slice(0, 3);
 
   const sampleRec =
     top3.length > 0
-      ? getThrowRecommendation(top3[0].flight, top3[0].disc, holeDistance, handedness, weather, holeBearing)
+      ? getThrowRecommendation(top3[0].flight, top3[0].disc, holeDistance, handedness, weather, holeBearing, obstacles)
       : null;
 
   return (
@@ -37,13 +38,18 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, 
         Hole: <strong>{holeDistance}m</strong> · Max throw: <strong>{throwDistance}m</strong> · {handedness === "left" ? "Left" : "Right"}-handed
       </p>
 
-      {sampleRec?.windNote && (
-        <div className="wind-banner">{sampleRec.windNote}</div>
-      )}
+      {sampleRec?.obstacleNote && (       
+         <div className="obstacle-banner">{sampleRec.obstacleNote}</div>
+        )}
+
+        {sampleRec?.windNote && (
+         <div className="wind-banner">{sampleRec.windNote}</div>
+        )}
+
 
       <div className="disc-rec-list">
         {top3.map(({ disc, flight, throws }, i) => {
-          const throwRec = getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing);
+          const throwRec = getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing, obstacles);
           return (
             <div key={disc.id} className={`disc-rec-card rank-${i + 1}`}>
               <div className="disc-rec-rank">#{i + 1}</div>
@@ -53,7 +59,7 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, 
                 <div className="disc-rec-stability">{flight.stabilityLabel}</div>
                 <div className="disc-rec-stats">
                   <span>~{flight.effectiveDistance}m</span>
-                  <span>{throwsLabel(throws)}</span>
+                  <span>{throwsLabel(throws, flight.effectiveDistance, holeDistance)}</span>
                   {(disc.wear || 0) < 0 && (
                     <span className="disc-rec-wear">
                       {"●".repeat(3 + (disc.wear || 0))}{"○".repeat(-(disc.wear || 0))} worn
@@ -84,9 +90,14 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, 
   );
 }
 
-function throwsLabel(throws) {
-  if (throws === "one-throw")   return "1 throw";
-  if (throws === "two-throw")   return "2 throws";
-  if (throws === "multi-throw") return "Multiple throws";
+function throwsLabel(throws, effectiveDistance, holeDistance) {
+  const remaining = Math.max(0, holeDistance - effectiveDistance);
+
+  if (throws === "one-throw") {
+    if (remaining <= 0) return "Reaches basket";
+    return `1 throw (~${remaining}m putt)`;
+  }
+  if (throws === "two-throw")   return `2 throws (~${remaining}m to go)`;
+  if (throws === "multi-throw") return `3+ throws (~${remaining}m to go)`;
   return "";
 }

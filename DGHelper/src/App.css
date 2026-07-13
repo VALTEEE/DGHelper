@@ -2162,3 +2162,15 @@
   margin-bottom: 10px;
   line-height: 1.4;
 }
+
+.obstacle-banner {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.82rem;
+  color: #166534;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}

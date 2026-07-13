@@ -6,9 +6,11 @@
 // How much power (speed units) each category requires per meter thrown
 const CATEGORY_MULTIPLIER = {
   "Distance Driver": 1.0,
-  "Fairway Driver": 0.9,
-  "Midrange":       0.75,
-  "Putter":         0.65,
+  "Hybrid Driver":   0.95,
+  "Control Driver":  0.88,
+  "Midrange":        0.75,
+  "Approach Discs":  0.68,
+  "Putter":          0.65,
 };
 
 // Default if category is unknown
@@ -43,7 +45,7 @@ export function calculateFlight(throwDistance, disc) {
   const actualFade = Math.max(0,  Math.min(8,  fade + speedDifference));
 
   // Step 4: effective distance (glide scales how far the disc actually goes)
-  const glideMultiplier = glide / 5;
+  const glideMultiplier = glide / 6;
   const effectiveDistance = Math.round(throwDistance * glideMultiplier);
 
   // Step 5: human-readable stability label
@@ -71,10 +73,23 @@ export function calculateFlight(throwDistance, disc) {
  * @param {number} effectiveDistance - How far this disc goes for this player
  * @returns {string}                 - "one-throw", "two-throw", or "out-of-range"
  */
+const PUTT_RANGE = 10;    // within 10m = easy putt
+const APPROACH_RANGE = 40; // within 40m = comfortable approach
+
 export function throwsNeeded(holeDistance, effectiveDistance) {
   if (effectiveDistance <= 0) return "out-of-range";
-  if (effectiveDistance >= holeDistance) return "one-throw";
-  if (effectiveDistance * 2 >= holeDistance) return "two-throw";
+
+  const remaining = holeDistance - effectiveDistance;
+
+  // Lands within putting range (including overshoot)
+  if (remaining <= PUTT_RANGE) return "one-throw";
+
+  // One throw leaves a comfortable approach/putt
+  if (remaining <= APPROACH_RANGE) return "two-throw";
+
+  // Two throws can get within putting range
+  if (effectiveDistance * 2 >= holeDistance - PUTT_RANGE) return "two-throw";
+
   return "multi-throw";
 }
 
@@ -87,9 +102,10 @@ export function throwsNeeded(holeDistance, effectiveDistance) {
  * @param {number}   holeDistance
  * @returns {object[]}            - Sorted array of { disc, flight, throws, score }
  */
-export function rankDiscsForHole(discs, throwDistance, holeDistance) {
-
+export function rankDiscsForHole(discs, throwDistance, holeDistance, obstacles) {
   if (!discs || discs.length === 0 || !throwDistance) return [];
+
+  const obstacleLevel = getObstacleLevel(obstacles); // 0, 1, 2, or 3
 
   return discs
     .map((disc) => {
@@ -97,18 +113,30 @@ export function rankDiscsForHole(discs, throwDistance, holeDistance) {
       const flight = calculateFlight(throwDistance, wornDisc);
       const throws = throwsNeeded(holeDistance, flight.effectiveDistance);
 
-      // Start with flight instability as the base score (lower = more neutral flight)
       let score = Math.abs(flight.actualTurn) + flight.actualFade;
 
-      // Penalise overshooting: every 15m past the basket adds 1 point
-      // A putter landing 7m past = 0.5 penalty
-      // A driver landing 109m past = 7.3 penalty
-      const overshoot = Math.max(0, flight.effectiveDistance - holeDistance);
-      score += overshoot / 15;
+      const remaining = holeDistance - flight.effectiveDistance;
 
-      // Penalise not reaching the basket at all
-      if (throws === "two-throw")   score += 2;
-      if (throws === "multi-throw") score += 8;
+      if (remaining <= PUTT_RANGE) {
+        const overshoot = Math.max(0, flight.effectiveDistance - holeDistance);
+        score += overshoot / 15;
+      } else if (remaining <= APPROACH_RANGE) {
+        score += 1 + (remaining - PUTT_RANGE) / 30;
+      } else if (throws === "two-throw") {
+        score += 2 + (remaining - APPROACH_RANGE) / 20;
+      } else {
+        score += 8 + remaining / 20;
+      }
+
+      const effortRatio = flight.effectiveDistance > 0
+        ? Math.min(1, holeDistance / flight.effectiveDistance)
+        : 1;
+      score -= (1 - effortRatio) * 2;
+
+      // Obstacle penalty: understable discs (high negative turn) are risky near trees
+      // obstacleLevel 1=light, 2=moderate, 3=heavy
+      const turnRisk = Math.max(0, -flight.actualTurn);
+      score += obstacleLevel * turnRisk * 0.4;
 
       return { disc, flight, throws, score };
     })
@@ -117,7 +145,7 @@ export function rankDiscsForHole(discs, throwDistance, holeDistance) {
 
 
 
-export function getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing) {
+export function getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing, obstacles) {
   const isRightHanded = handedness !== "left";
   const fadeDir = isRightHanded ? "left" : "right";
   const turnDir = isRightHanded ? "right" : "left";
@@ -127,26 +155,30 @@ export function getThrowRecommendation(flight, disc, holeDistance, handedness, w
 
   // Calculate headwind early so it shifts the actual recommendation
   let headwindBonus = 0;
-  if (weather && holeBearing !== null && holeBearing !== undefined) {
-    const windSpeed = weather.wind_speed_10m || 0;
-    const windFrom = weather.wind_direction_10m ?? 0;
-    if (windSpeed >= 3) {
-      const relAngle = (windFrom - holeBearing + 360) % 360;
-      const headwind = Math.cos((relAngle * Math.PI) / 180) * windSpeed;
-      if (headwind > 8)       headwindBonus =  1.5;
-      else if (headwind > 5)  headwindBonus =  0.75;
-      else if (headwind < -8) headwindBonus = -1.5;
-      else if (headwind < -5) headwindBonus = -0.75;
-    }
+if (weather && holeBearing !== null && holeBearing !== undefined) {
+  const windSpeed = weather.wind_speed_10m || 0;
+  const windFrom = weather.wind_direction_10m ?? 0;
+  if (windSpeed >= 3) {
+    const relAngle = (windFrom - holeBearing + 360) % 360;
+    const headwind = Math.cos((relAngle * Math.PI) / 180) * windSpeed;
+    if (headwind > 8)       headwindBonus =  1.5;
+    else if (headwind > 5)  headwindBonus =  0.75;
+    else if (headwind < -8) headwindBonus = -1.5;
+    else if (headwind < -5) headwindBonus = -0.75;
   }
+}
 
-  // Headwind = disc acts more overstable → higher adjusted stability
-  // Tailwind = disc acts more understable → lower adjusted stability
-  const adjustedStability = netStability + headwindBonus;
+let obstacleBonus = 0;
+const obstacleLevel = getObstacleLevel(obstacles);
+if (obstacleLevel === 3)      obstacleBonus = 1.0;
+else if (obstacleLevel === 2) obstacleBonus = 0.5;
+
+const adjustedStability = netStability + headwindBonus + obstacleBonus;
 
   function withWind(result) {
     const windNote = getWindNote(weather, holeBearing, isRightHanded);
-    return { ...result, windNote };
+    const obstacleNote = getObstacleNote(obstacles);
+    return { ...result, windNote, obstacleNote };
   }
 
   if (holeDistance <= 20) {
@@ -334,4 +366,26 @@ function applyWear(disc) {
     turn: Number(disc.turn) + (wear * 0.5),
     fade: Math.max(0, Number(disc.fade) + (wear * 0.25)),
   };
+}
+
+function getObstacleLevel(obstacles) {
+  if (!obstacles || obstacles.length === 0) return 0;
+  if (obstacles.some((o) => o.severity === "heavy"))    return 3;
+  if (obstacles.some((o) => o.severity === "moderate")) return 2;
+  return 1;
+}
+
+export function getObstacleNote(obstacles) {
+  if (!obstacles || obstacles.length === 0) return "";
+
+  const heavy    = obstacles.filter((o) => o.severity === "heavy");
+  const moderate = obstacles.filter((o) => o.severity === "moderate");
+
+  if (heavy.length > 0) {
+    return `🌲 Heavy obstacles: ${heavy.map((o) => o.note).join(" · ")} — accuracy over distance.`;
+  }
+  if (moderate.length > 0) {
+    return `🌳 Obstacles: ${moderate.map((o) => o.note).join(" · ")} — choose a reliable line.`;
+  }
+  return "";
 }
