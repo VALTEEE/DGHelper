@@ -34,6 +34,7 @@ export default function BagManager({
   selectedBag,
   selectedBagDiscs,
   removeDiscFromBag,
+  updateDiscWear,
 }) {
   const [showCreateInput, setShowCreateInput] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -175,25 +176,56 @@ export default function BagManager({
                       <span className="bag-type-count">{discs.length}</span>
                     </div>
 
-                    {discs.map((disc) => (
-                      <div key={disc.id} className="bag-disc-row">
-                        <div className="bag-disc-row-info">
-                          <span className="bag-disc-row-name">
-                            {disc.brand} {disc.name}
-                          </span>
-                          <span className="bag-disc-row-numbers">
-                            {disc.speed} / {disc.glide} / {disc.turn} / {disc.fade}
-                          </span>
+                    {discs.map((disc) => {
+                       const wear = disc.wear || 0;
+                       const filledCount = 3 + wear;
+                       const dots = [0, 1, 2]
+                         .map((i) => (i < filledCount ? "●" : "○"))
+                         .join("");
+
+                       return (
+                         <div key={disc.id} className="bag-disc-row">
+                           <div className="bag-disc-row-info">
+                             <span className="bag-disc-row-name">
+                              {disc.brand} {disc.name}
+                            </span>
+                              <span className="bag-disc-row-numbers">
+                                {disc.speed} / {disc.glide} / {disc.turn} / {disc.fade}
+                              </span>
+                           </div>
+
+                           <div className="bag-disc-wear">
+                              <button
+                                className="wear-btn"
+                                onClick={() => updateDiscWear(disc.id, wear - 1)}
+                                disabled={wear <= -3}
+                                title="More worn"
+                             >
+                                −
+                              </button>
+                             <span className="wear-dots" title={`Wear: ${wear}`}>
+                               {dots}
+                              </span>
+                              <button
+                                className="wear-btn"
+                               onClick={() => updateDiscWear(disc.id, wear + 1)}
+                               disabled={wear >= 0}
+                                title="Less worn"
+                             >
+                               +
+                              </button>
+                           </div>
+
+                           <button
+                             className="bag-disc-row-remove"
+                             onClick={() => removeDiscFromBag(disc.id)}
+                              title="Remove from bag"
+                           >
+                              ×
+                           </button>
                         </div>
-                        <button
-                          className="bag-disc-row-remove"
-                          onClick={() => removeDiscFromBag(disc.id)}
-                          title="Remove from bag"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                       );
+                      })}
                   </div>
                 );
               })

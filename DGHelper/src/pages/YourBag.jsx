@@ -1,14 +1,15 @@
 import allDiscsData from "../data/discs";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import DiscSearch from "../components/DiscSearch";
 import DiscCollection from "../components/DiscCollection";
 import BagManager from "../components/BagManager";
 import { useAuth } from "../context/AuthContext";
 import { fetchBag, saveBag } from "../utils/api";
+import Login from "./Login";
 
 export default function YourBag() {
   const { isAuthenticated } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -25,6 +26,8 @@ export default function YourBag() {
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     hasLoadedRef.current = false;
 
     async function loadBag() {
@@ -32,42 +35,27 @@ export default function YourBag() {
       setSyncStatus("");
 
       try {
-        if (isAuthenticated) {
-          const data = await fetchBag();
-          let nextOwned = data.ownedDiscs || [];
-          let nextBags = data.bags || [];
+        const data = await fetchBag();
+        let nextOwned = data.ownedDiscs || [];
+        let nextBags = data.bags || [];
 
-          const localOwned = localStorage.getItem("ownedDiscs");
-          const localBags = localStorage.getItem("bags");
-          const hasLocalData =
-            (localOwned && JSON.parse(localOwned).length > 0) ||
-            (localBags && JSON.parse(localBags).length > 0);
+        // One-time migration: if account is empty but localStorage has data, sync it up
+        const localOwned = localStorage.getItem("ownedDiscs");
+        const localBags = localStorage.getItem("bags");
+        const hasLocalData =
+          (localOwned && JSON.parse(localOwned).length > 0) ||
+          (localBags && JSON.parse(localBags).length > 0);
 
-          if (nextOwned.length === 0 && nextBags.length === 0 && hasLocalData) {
-            nextOwned = localOwned ? JSON.parse(localOwned) : [];
-            nextBags = localBags ? JSON.parse(localBags) : [];
-            await saveBag(nextOwned, nextBags);
-            setSyncStatus("Local bag synced to your account");
-          }
-
-          setOwnedDiscs(nextOwned);
-          setBags(nextBags);
-          if (nextBags.length > 0) setSelectedBagId(nextBags[0].id);
-        } else {
-          const savedOwnedDiscs = localStorage.getItem("ownedDiscs");
-          const savedBags = localStorage.getItem("bags");
-
-          setOwnedDiscs(savedOwnedDiscs ? JSON.parse(savedOwnedDiscs) : []);
-
-          if (savedBags) {
-            const parsedBags = JSON.parse(savedBags);
-            setBags(parsedBags);
-            if (parsedBags.length > 0) setSelectedBagId(parsedBags[0].id);
-          } else {
-            setBags([]);
-            setSelectedBagId(null);
-          }
+        if (nextOwned.length === 0 && nextBags.length === 0 && hasLocalData) {
+          nextOwned = localOwned ? JSON.parse(localOwned) : [];
+          nextBags = localBags ? JSON.parse(localBags) : [];
+          await saveBag(nextOwned, nextBags);
+          setSyncStatus("Local bag synced to your account");
         }
+
+        setOwnedDiscs(nextOwned);
+        setBags(nextBags);
+        if (nextBags.length > 0) setSelectedBagId(nextBags[0].id);
       } catch (error) {
         console.error("Failed to load bag:", error);
         setSyncStatus("Could not load saved bag");
@@ -80,31 +68,25 @@ export default function YourBag() {
     loadBag();
   }, [isAuthenticated]);
 
- 
-
   useEffect(() => {
     if (!hasLoadedRef.current) return;
+    if (!isAuthenticated) return;
 
-    if (isAuthenticated) {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await saveBag(ownedDiscs, bags);
+        setSyncStatus("Saved to your account");
+      } catch (error) {
+        console.error("Failed to save bag:", error);
+        setSyncStatus("Save failed — try again");
+      }
+    }, 600);
+
+    return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          await saveBag(ownedDiscs, bags);
-          setSyncStatus("Saved to your account");
-        } catch (error) {
-          console.error("Failed to save bag:", error);
-          setSyncStatus("Save failed — try again");
-        }
-      }, 600);
-
-      return () => {
-        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      };
-    }
-
-    localStorage.setItem("ownedDiscs", JSON.stringify(ownedDiscs));
-    localStorage.setItem("bags", JSON.stringify(bags));
+    };
   }, [ownedDiscs, bags, isAuthenticated]);
 
   useEffect(() => {
@@ -118,11 +100,10 @@ export default function YourBag() {
     setSearchResults(results.slice(0, 10));
   }, [searchTerm, allDiscs]);
 
-  // Adds disc to collection and, if a bag is selected, directly to that bag too
   function handleAddFromSearch(disc) {
     if (!ownedDiscs.some((d) => d.id === disc.id)) {
-      setOwnedDiscs((prev) => [...prev, disc]);
-    }
+     setOwnedDiscs((prev) => [...prev, { ...disc, wear: 0 }]);
+   }
     if (selectedBagId) {
       setBags((prev) =>
         prev.map((bag) =>
@@ -153,6 +134,13 @@ export default function YourBag() {
     setNewBagName("");
   }
 
+  function updateDiscWear(discId, newWear) {
+   const clamped = Math.max(-3, Math.min(0, newWear));
+    setOwnedDiscs((prev) =>
+      prev.map((d) => (d.id === discId ? { ...d, wear: clamped } : d))
+    );
+  }
+
   function deleteBag(bagId) {
     const remaining = bags.filter((b) => b.id !== bagId);
     setBags(remaining);
@@ -171,6 +159,8 @@ export default function YourBag() {
     );
   }
 
+
+
   function removeDiscFromBag(discId) {
     setBags(
       bags.map((bag) =>
@@ -178,6 +168,25 @@ export default function YourBag() {
           ? { ...bag, discIds: bag.discIds.filter((id) => id !== discId) }
           : bag
       )
+    );
+  }
+
+  // --- Locked state for guests ---
+  if (!isAuthenticated) {
+    return (
+      <div className="your-bag-page">
+        <div className="bag-locked-state">
+          <div className="bag-locked-icon">🔒</div>
+          <h2 className="bag-locked-title">Bag feature is locked</h2>
+          <p className="bag-locked-desc">
+            Log in to create bags, track your disc collection and get course recommendations.
+          </p>
+          <button className="bag-locked-login-btn" onClick={() => setShowLogin(true)}>
+            Log in
+          </button>
+        </div>
+        {showLogin && <Login onClose={() => setShowLogin(false)} />}
+      </div>
     );
   }
 
@@ -191,14 +200,7 @@ export default function YourBag() {
       <div className="bag-page-header">
         <h1>Your Bag</h1>
         <div className="bag-page-meta">
-          {!isAuthenticated && (
-            <p className="bag-login-prompt">
-              <Link to="/login">Log in</Link> to save your bag to your account.
-            </p>
-          )}
-          {isAuthenticated && syncStatus && (
-            <p className="bag-sync-status">{syncStatus}</p>
-          )}
+          {syncStatus && <p className="bag-sync-status">{syncStatus}</p>}
         </div>
       </div>
 
@@ -208,7 +210,6 @@ export default function YourBag() {
         </div>
       ) : (
         <div className="bag-workspace">
-          {/* Left panel: search + collection */}
           <div className="search-collection-panel">
             <DiscSearch
               searchTerm={searchTerm}
@@ -226,7 +227,6 @@ export default function YourBag() {
             />
           </div>
 
-          {/* Right panel: the bag */}
           <div className="bag-side-panel">
             <BagManager
               newBagName={newBagName}
@@ -239,6 +239,7 @@ export default function YourBag() {
               selectedBag={selectedBag}
               selectedBagDiscs={selectedBagDiscs}
               removeDiscFromBag={removeDiscFromBag}
+              updateDiscWear={updateDiscWear}
             />
           </div>
         </div>

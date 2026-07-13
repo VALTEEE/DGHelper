@@ -1,6 +1,6 @@
+const db = require("../database/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("../database/db");
 const { JWT_SECRET } = require("../middleware/auth");
 
 function createToken(user) {
@@ -74,7 +74,13 @@ function login(req, res) {
 }
 
 function me(req, res) {
-  res.json({ user: req.user });
+  const user = db
+    .prepare("SELECT id, email, username, throw_distance, throw_handedness FROM users WHERE id = ?")
+    .get(req.user.id);
+
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  res.json({ user });
 }
 
 module.exports = { register, login, me };

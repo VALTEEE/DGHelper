@@ -32,6 +32,7 @@ db.exec(`
 const addColumns = [
   "ALTER TABLE users ADD COLUMN username TEXT",
   "ALTER TABLE users ADD COLUMN throw_distance INTEGER DEFAULT 0",
+  "ALTER TABLE users ADD COLUMN throw_handedness TEXT DEFAULT 'right'",
 ];
 
 for (const sql of addColumns) {

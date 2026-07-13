@@ -41,8 +41,8 @@ export default function Discs() {
       <DiscFilters onChange={handleFiltersChange} />
 
       <div style={{ marginLeft: "20px", flex: 1 }}>
-        <h2>Disc List</h2>
-        <p>Showing page {page} of {totalPages} ({totalItems} discs)</p>
+        <h2 className="title">Disc List</h2>
+        <p className="subtitle">Showing page {page} of {totalPages} ({totalItems} discs)</p>
 
         <DiscList discs={pageDiscs} />
 

@@ -7,6 +7,7 @@ export default function Profile() {
 
   const [username, setUsername] = useState("");
   const [throwDistance, setThrowDistance] = useState(0);
+  const [throwHandedness, setThrowHandedness] = useState("right");
   const [profileMsg, setProfileMsg] = useState("");
   const [profileError, setProfileError] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
@@ -24,6 +25,7 @@ export default function Profile() {
       .then((data) => {
         setUsername(data.user.username || "");
         setThrowDistance(data.user.throw_distance || 0);
+        setThrowHandedness(data.user.throw_handedness || "right");
       })
       .catch(() => {});
   }, []);
@@ -34,10 +36,11 @@ export default function Profile() {
     setProfileError("");
     setSavingProfile(true);
     try {
-      const data = await updateProfile(username, throwDistance);
+      const data = await updateProfile(username, throwDistance, throwHandedness);
       updateUser({
         username: data.user.username,
         throw_distance: data.user.throw_distance,
+        throw_handedness: data.user.throw_handedness,
       });
       setProfileMsg("Profile saved!");
     } catch (err) {
@@ -123,6 +126,26 @@ export default function Profile() {
 
           {profileMsg && <p className="profile-success">{profileMsg}</p>}
           {profileError && <p className="profile-error">{profileError}</p>}
+          <label className="profile-field">
+            <span className="profile-field-label">Throwing hand</span>
+            <span className="profile-field-hint">Affects throw direction descriptions in disc recommendations</span>
+            <div className="handedness-toggle">
+              <button
+                type="button"
+                className={`handedness-btn ${throwHandedness === "right" ? "handedness-active" : ""}`}
+                onClick={() => setThrowHandedness("right")}
+            >
+                Right-handed
+              </button>
+              <button
+                type="button"
+                className={`handedness-btn ${throwHandedness === "left" ? "handedness-active" : ""}`}
+                onClick={() => setThrowHandedness("left")}
+             >
+               Left-handed
+             </button>
+           </div>
+          </label>
 
           <button type="submit" className="profile-save-btn" disabled={savingProfile}>
             {savingProfile ? "Saving..." : "Save profile"}

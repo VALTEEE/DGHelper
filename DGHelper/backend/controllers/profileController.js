@@ -3,8 +3,8 @@ const db = require("../database/db");
 
 function getProfile(req, res) {
   const user = db
-    .prepare("SELECT id, email, username, throw_distance FROM users WHERE id = ?")
-    .get(req.user.id);
+     .prepare("SELECT id, email, username, throw_distance, throw_handedness FROM users WHERE id = ?")
+     .get(req.user.id);
 
   if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -12,7 +12,7 @@ function getProfile(req, res) {
 }
 
 function updateProfile(req, res) {
-  const { username, throwDistance } = req.body;
+  const { username, throwDistance, throwHandedness } = req.body;
   const userId = req.user.id;
 
   if (username !== undefined) {
@@ -28,11 +28,15 @@ function updateProfile(req, res) {
     if (isNaN(dist) || dist < 0 || dist > 300) {
       return res.status(400).json({ error: "Throw distance must be between 0 and 300 meters" });
     }
-    db.prepare("UPDATE users SET throw_distance = ? WHERE id = ?").run(dist, userId);
+    if (throwHandedness !== undefined) {
+    if (!["left", "right"].includes(throwHandedness)) {
+       return res.status(400).json({ error: "Handedness must be left or right" });
+    }
+    db.prepare("UPDATE users SET throw_handedness = ? WHERE id = ?").run(throwHandedness, userId);
   }
-
+  }
   const updated = db
-    .prepare("SELECT id, email, username, throw_distance FROM users WHERE id = ?")
+    .prepare("SELECT id, email, username, throw_distance, throw_handedness FROM users WHERE id = ?")
     .get(userId);
 
   res.json({ user: updated });

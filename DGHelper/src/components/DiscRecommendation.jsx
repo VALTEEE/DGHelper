@@ -1,9 +1,10 @@
 import { useAuth } from "../context/AuthContext";
-import { rankDiscsForHole } from "../utils/flightModel";
+import { rankDiscsForHole, getThrowRecommendation } from "../utils/flightModel";
 
-export default function DiscRecommendation({ holeDistance, ownedDiscs }) {
+export default function DiscRecommendation({ holeDistance, ownedDiscs, weather, holeBearing }) {
   const { user } = useAuth();
   const throwDistance = user?.throw_distance || 0;
+  const handedness = user?.throw_handedness || "right";
 
   if (!throwDistance) {
     return (
@@ -24,41 +25,68 @@ export default function DiscRecommendation({ holeDistance, ownedDiscs }) {
   const ranked = rankDiscsForHole(ownedDiscs, throwDistance, holeDistance);
   const top3 = ranked.slice(0, 3);
 
+  const sampleRec =
+    top3.length > 0
+      ? getThrowRecommendation(top3[0].flight, top3[0].disc, holeDistance, handedness, weather, holeBearing)
+      : null;
+
   return (
     <div className="disc-rec">
       <h3>Disc recommendation</h3>
       <p className="disc-rec-context">
-        Hole: <strong>{holeDistance}m</strong> · Your max throw: <strong>{throwDistance}m</strong>
+        Hole: <strong>{holeDistance}m</strong> · Max throw: <strong>{throwDistance}m</strong> · {handedness === "left" ? "Left" : "Right"}-handed
       </p>
 
+      {sampleRec?.windNote && (
+        <div className="wind-banner">{sampleRec.windNote}</div>
+      )}
+
       <div className="disc-rec-list">
-        {top3.map(({ disc, flight, throws }, i) => (
-          <div key={disc.id} className={`disc-rec-card rank-${i + 1}`}>
-            <div className="disc-rec-rank">#{i + 1}</div>
-            <div className="disc-rec-info">
-              <div className="disc-rec-name">{disc.brand} {disc.name}</div>
-              <div className="disc-rec-category">{disc.category}</div>
-              <div className="disc-rec-stability">{flight.stabilityLabel}</div>
-              <div className="disc-rec-flight">{flight.flightDescription}</div>
-              <div className="disc-rec-stats">
-                <span>Reaches ~{flight.effectiveDistance}m</span>
-                <span>{throwsLabel(throws)}</span>
+        {top3.map(({ disc, flight, throws }, i) => {
+          const throwRec = getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing);
+          return (
+            <div key={disc.id} className={`disc-rec-card rank-${i + 1}`}>
+              <div className="disc-rec-rank">#{i + 1}</div>
+              <div className="disc-rec-info">
+                <div className="disc-rec-name">{disc.brand} {disc.name}</div>
+                <div className="disc-rec-category">{disc.category}</div>
+                <div className="disc-rec-stability">{flight.stabilityLabel}</div>
+                <div className="disc-rec-stats">
+                  <span>~{flight.effectiveDistance}m</span>
+                  <span>{throwsLabel(throws)}</span>
+                  {(disc.wear || 0) < 0 && (
+                    <span className="disc-rec-wear">
+                      {"●".repeat(3 + (disc.wear || 0))}{"○".repeat(-(disc.wear || 0))} worn
+                    </span>
+                  )}
+                </div>
+                <div className="disc-throw-rec">
+                  <span className={`throw-badge throw-badge-${throwRec.primary.release || "putt"}`}>
+                    {throwRec.primary.label}
+                  </span>
+                  <p className="throw-rec-reason">{throwRec.primary.reason}</p>
+                  {throwRec.secondary && (
+                    <span className="throw-badge throw-badge-secondary">
+                      Also: {throwRec.secondary.label}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          );
+        })}
 
-      {ranked.length === 0 && (
-        <p>No discs in your bag yet. Add some in Your Bag.</p>
-      )}
+        {ranked.length === 0 && (
+          <p>No discs in your bag yet. Add some in Your Bag.</p>
+        )}
+      </div>
     </div>
   );
 }
 
 function throwsLabel(throws) {
-  if (throws === "one-throw")   return "Reaches in 1 throw";
-  if (throws === "two-throw")   return "Needs 2 throws";
-  if (throws === "multi-throw") return "Multiple throws needed";
+  if (throws === "one-throw")   return "1 throw";
+  if (throws === "two-throw")   return "2 throws";
+  if (throws === "multi-throw") return "Multiple throws";
   return "";
 }

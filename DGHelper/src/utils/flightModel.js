@@ -23,7 +23,11 @@ const DEFAULT_MULTIPLIER = 1.0;
  * @returns {object}               - Flight prediction with labels and explanation
  */
 export function calculateFlight(throwDistance, disc) {
-  const { speed, glide, turn, fade, category } = disc;
+  const speed = Number(disc.speed);
+  const glide = Number(disc.glide);
+  const turn = Number(disc.turn);
+  const fade = Number(disc.fade);
+  const { category } = disc;
 
   // Step 1: how much speed does this disc need from the player?
   const multiplier = CATEGORY_MULTIPLIER[category] ?? DEFAULT_MULTIPLIER;
@@ -84,25 +88,166 @@ export function throwsNeeded(holeDistance, effectiveDistance) {
  * @returns {object[]}            - Sorted array of { disc, flight, throws, score }
  */
 export function rankDiscsForHole(discs, throwDistance, holeDistance) {
+
   if (!discs || discs.length === 0 || !throwDistance) return [];
 
   return discs
     .map((disc) => {
-      const flight = calculateFlight(throwDistance, disc);
+      const wornDisc = applyWear(disc);
+      const flight = calculateFlight(throwDistance, wornDisc);
       const throws = throwsNeeded(holeDistance, flight.effectiveDistance);
 
-      // Score: lower is better
-      // Penalise overstable (high fade) and understable (very negative turn)
-      // Reward discs that reach in one throw and have neutral flight
+      // Start with flight instability as the base score (lower = more neutral flight)
       let score = Math.abs(flight.actualTurn) + flight.actualFade;
-      if (throws === "one-throw")   score -= 5;
+
+      // Penalise overshooting: every 15m past the basket adds 1 point
+      // A putter landing 7m past = 0.5 penalty
+      // A driver landing 109m past = 7.3 penalty
+      const overshoot = Math.max(0, flight.effectiveDistance - holeDistance);
+      score += overshoot / 15;
+
+      // Penalise not reaching the basket at all
       if (throws === "two-throw")   score += 2;
-      if (throws === "multi-throw") score += 6;
+      if (throws === "multi-throw") score += 8;
 
       return { disc, flight, throws, score };
     })
     .sort((a, b) => a.score - b.score);
 }
+
+
+
+export function getThrowRecommendation(flight, disc, holeDistance, handedness, weather, holeBearing) {
+  const isRightHanded = handedness !== "left";
+  const fadeDir = isRightHanded ? "left" : "right";
+  const turnDir = isRightHanded ? "right" : "left";
+
+  const netStability = flight.actualFade + flight.actualTurn;
+  const discSpeed = Number(disc.speed);
+
+  // Calculate headwind early so it shifts the actual recommendation
+  let headwindBonus = 0;
+  if (weather && holeBearing !== null && holeBearing !== undefined) {
+    const windSpeed = weather.wind_speed_10m || 0;
+    const windFrom = weather.wind_direction_10m ?? 0;
+    if (windSpeed >= 3) {
+      const relAngle = (windFrom - holeBearing + 360) % 360;
+      const headwind = Math.cos((relAngle * Math.PI) / 180) * windSpeed;
+      if (headwind > 8)       headwindBonus =  1.5;
+      else if (headwind > 5)  headwindBonus =  0.75;
+      else if (headwind < -8) headwindBonus = -1.5;
+      else if (headwind < -5) headwindBonus = -0.75;
+    }
+  }
+
+  // Headwind = disc acts more overstable → higher adjusted stability
+  // Tailwind = disc acts more understable → lower adjusted stability
+  const adjustedStability = netStability + headwindBonus;
+
+  function withWind(result) {
+    const windNote = getWindNote(weather, holeBearing, isRightHanded);
+    return { ...result, windNote };
+  }
+
+  if (holeDistance <= 20) {
+    return withWind({
+      primary: { throw: "putt", release: null, label: "Putt", reason: "Within putting range — smooth putting motion." },
+      secondary: null,
+    });
+  }
+
+  const gyroscopicBonus = (discSpeed / 14) * 0.3;
+  const baseHoldRatio = Math.max(0, 1 - netStability / 8);
+  const finalHoldRatio = Math.min(1, baseHoldRatio * (1 + gyroscopicBonus));
+  const returnStrength = Math.max(0, netStability / 6);
+
+  function anhyzerReason() {
+    const pct = Math.round(finalHoldRatio * 100);
+    let holdDesc;
+    if (pct >= 90) holdDesc = `holds the ${turnDir} curve almost the whole flight`;
+    else if (pct >= 70) holdDesc = `curves ${turnDir} for most of the flight`;
+    else if (pct >= 40) holdDesc = `curves ${turnDir} for roughly half the flight`;
+    else holdDesc = `briefly goes ${turnDir} then snaps back hard`;
+
+    let returnDesc = "";
+    if (returnStrength > 0.5) returnDesc = `, then fades hard ${fadeDir}`;
+    else if (returnStrength > 0.2) returnDesc = `, then gently fades ${fadeDir}`;
+    else if (returnStrength > 0) returnDesc = `, slight ${fadeDir} fade at the end`;
+
+    const gyroNote = discSpeed >= 10 ? ` High-speed disc holds the angle longer.` : "";
+    return `Anhyzer release — disc ${holdDesc}${returnDesc}.${gyroNote}`;
+  }
+
+  // All branches now use adjustedStability instead of netStability
+  if (adjustedStability < -2 && holeDistance >= 70) {
+    return withWind({
+      primary: {
+        throw: "backhand", release: "hyzerflip", label: "Backhand Hyzerflip",
+        reason: `Start on hyzer — this very understable disc flips to flat mid-flight, curving ${turnDir} for maximum distance.`,
+      },
+      secondary: {
+        throw: "backhand", release: "anhyzer", label: "Backhand Anhyzer",
+        reason: anhyzerReason(), holdRatio: finalHoldRatio, returnStrength,
+      },
+    });
+  }
+
+  if (adjustedStability < 0) {
+    return withWind({
+      primary: {
+        throw: "backhand", release: "anhyzer", label: "Backhand Anhyzer",
+        reason: anhyzerReason(), holdRatio: finalHoldRatio, returnStrength,
+      },
+      secondary: null,
+    });
+  }
+
+  if (adjustedStability < 1) {
+    return withWind({
+      primary: {
+        throw: "backhand", release: "flat", label: "Backhand Flat",
+        reason: `Neutral disc — flat release gives a straight flight with a gentle ${fadeDir} fade at the end.`,
+      },
+      secondary: null,
+    });
+  }
+
+  if (adjustedStability < 2) {
+    return withWind({
+      primary: {
+        throw: "backhand", release: "flat", label: "Backhand Flat",
+        reason: `Moderately overstable — flat release gives a reliable line with a ${fadeDir} fade.`,
+      },
+      secondary: {
+        throw: "backhand", release: "hyzer", label: "Backhand Hyzer",
+        reason: `Hyzer release for a stronger ${fadeDir} curve — useful into headwinds or tight fairways.`,
+      },
+    });
+  }
+
+  if (adjustedStability < 4) {
+    return withWind({
+      primary: {
+        throw: "forehand", release: "hyzer", label: "Forehand Hyzer",
+        reason: `Overstable disc — the natural fade becomes a ${turnDir} curve on forehand. Direct and reliable.`,
+      },
+      secondary: {
+        throw: "backhand", release: "hyzer", label: "Backhand Hyzer",
+        reason: `Hyzer backhand amplifies the fade for a strong ${fadeDir} curve shot.`,
+      },
+    });
+  }
+
+  return withWind({
+    primary: {
+      throw: "forehand", release: "hyzer", label: "Forehand Hyzer",
+      reason: `Very overstable — forehand is the most controlled option. Strong ${turnDir} curve with a hard finish.`,
+    },
+    secondary: null,
+  });
+}
+
+
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -140,4 +285,53 @@ function describeFlightPath(actualTurn, actualFade) {
   return parts.length > 0
     ? parts.join(", then ") + "."
     : "Flies straight with minimal movement.";
+}
+
+
+//------------Weather and wind effects----------------//
+
+export function getWindNote(weather, holeBearing, isRightHanded) {
+  if (!weather || holeBearing === null || holeBearing === undefined) return "";
+
+  const windSpeed = weather.wind_speed_10m || 0;
+  const windFrom = weather.wind_direction_10m ?? 0;
+
+  if (windSpeed < 3) return ""; // Calm — no note needed
+
+  const relAngle = (windFrom - holeBearing + 360) % 360;
+  const relAngleRad = (relAngle * Math.PI) / 180;
+
+  // Positive headwind = wind coming towards thrower (against the disc)
+  // Positive crosswind = wind from the right of the fairway
+  const headwind = Math.cos(relAngleRad) * windSpeed;
+  const crosswind = Math.sin(relAngleRad) * windSpeed;
+
+  const fadeDir = isRightHanded ? "left" : "right";
+  const turnDir = isRightHanded ? "right" : "left";
+
+  if (headwind > 8)
+    return `⚠️ Strong headwind ${Math.round(headwind)}m/s — keep disc low, add hyzer to prevent rollover.`;
+  if (headwind > 5)
+    return `🌬️ Headwind ${Math.round(headwind)}m/s — disc acts more overstable, slight hyzer helps.`;
+  if (headwind < -8)
+    return `💨 Strong tailwind ${Math.round(-headwind)}m/s — disc carries much further, risk of overshoot.`;
+  if (headwind < -5)
+    return `💨 Tailwind ${Math.round(-headwind)}m/s — disc goes further than the distance suggests.`;
+  if (crosswind > 5)
+    return `↙️ Right crosswind ${Math.round(crosswind)}m/s — aim more ${fadeDir} to compensate.`;
+  if (crosswind < -5)
+    return `↘️ Left crosswind ${Math.round(-crosswind)}m/s — aim more ${turnDir} to compensate.`;
+
+  return "";
+}
+
+//--------------Disc Wear---------------------//
+
+function applyWear(disc) {
+  const wear = disc.wear || 0;
+  return {
+    ...disc,
+    turn: Number(disc.turn) + (wear * 0.5),
+    fade: Math.max(0, Number(disc.fade) + (wear * 0.25)),
+  };
 }

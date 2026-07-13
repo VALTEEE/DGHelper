@@ -181,7 +181,8 @@ export default function CourseMap({ course, currentHole }) {
                 background: "rgba(59, 130, 246, 0.2)",
                 border: "2px dashed #3b82f6",
                 transform: "translate(-50%, -50%)",
-                animation: "pulse 2s ease-out infinite"
+                animation: "pulse 2s ease-out infinite",
+                overflow: "hidden"
               }}
             />
             

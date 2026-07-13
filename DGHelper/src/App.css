@@ -5,6 +5,10 @@
   text-align: center;
 }
 
+.title, .subtitle {
+  color: white;
+}
+
 .card {
   padding: 2em;
 }
@@ -115,6 +119,7 @@
   width: calc(100% + 4rem);             
   text-align: center;       /* center text */
   background-color: rgba(10, 15, 25, 0.75);  /* grey background */
+  color: rgb(194, 191, 191);
   padding: 8px 0;          /* vertical space */
   box-sizing: border-box;
   margin-left: -2rem;   /* include padding in width */
@@ -1201,6 +1206,7 @@
 
 .course-info {
   flex: 1;
+  background-color: #f9fafb27;
   min-width: 300px;
   max-width: 400px;
 }
@@ -1255,6 +1261,10 @@
   background: #f3f4f6;
   border-radius: 6px;
   font-size: 0.9rem;
+}
+
+.distance-item {
+  color: #4b576b;
 }
 
 .distance-item strong {
@@ -1739,6 +1749,7 @@
 
 .disc-rec h3 {
   margin: 0 0 0.5rem;
+  color: black;
 }
 
 .disc-rec-context {
@@ -1783,6 +1794,7 @@
 .disc-rec-name {
   font-weight: 700;
   font-size: 1rem;
+  color: black;
 }
 
 .disc-rec-category {
@@ -1825,4 +1837,328 @@
 .disc-rec-empty a {
   color: #0891b2;
   font-weight: 600;
+}
+
+/* ===================== COURSES LIST ===================== */
+
+.courses-list-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 1.5rem;
+}
+
+.courses-search-wrapper {
+  margin-bottom: 28px;
+}
+
+.courses-search-input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  background: #f8fafc;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.courses-search-input:focus {
+  border-color: #06d6f1;
+  background: #fff;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.course-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #06d6f1;
+}
+
+.course-card-image-wrapper {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.course-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-card-info {
+  padding: 16px;
+}
+
+.course-card-name {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.course-card-meta {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.course-card-holes {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #06d6f1;
+}
+
+.courses-empty {
+  text-align: center;
+  color: #94a3b8;
+  margin-top: 2rem;
+}
+
+.course-back-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #0891b2;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0 20px;
+  text-align: left;
+  display: block;
+}
+
+.course-back-btn:hover {
+  color: #0e7490;
+  text-decoration: underline;
+}
+
+.disc-rec-empty {
+  color: black;
+}
+
+/* ===================== BAG LOCKED STATE ===================== */
+
+.bag-locked-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.bag-locked-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1.25rem;
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.bag-locked-title {
+  margin: 0 0 0.75rem;
+  color: #64748b;
+  font-size: 1.5rem;
+}
+
+.bag-locked-desc {
+  margin: 0 0 2rem;
+  font-size: 1rem;
+  color: #94a3b8;
+  max-width: 380px;
+}
+
+.bag-locked-login-btn {
+  padding: 12px 32px;
+  background: rgb(13, 202, 98);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bag-locked-login-btn:hover {
+  background: #059669;
+}
+
+
+/* ===================== RECOMMENDATION DISTANCE TOGGLE ===================== */
+
+.rec-distance-toggle {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.rec-toggle-btn {
+  flex: 1;
+  padding: 8px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rec-toggle-btn:hover:not(:disabled) {
+  border-color: #06d6f1;
+  background: #f0fdff;
+}
+
+.rec-toggle-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rec-toggle-active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: green;
+}
+
+/* Disc wear controls in bag */
+.bag-disc-wear {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.wear-dots {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.wear-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 3px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.wear-btn:hover:not(:disabled) {
+  color: white;
+}
+
+.wear-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+
+/* ===================== THROW RECOMMENDATION ===================== */
+
+.disc-throw-rec {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.throw-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.throw-badge-hyzer      { background: #1e293b; color: white; }
+.throw-badge-flat       { background: #0891b2; color: white; }
+.throw-badge-anhyzer    { background: #7c3aed; color: white; }
+.throw-badge-hyzerflip  { background: #ea580c; color: white; }
+.throw-badge-putt       { background: #059669; color: white; }
+.throw-badge-secondary  { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; margin-top: 4px; }
+
+.throw-rec-reason {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.disc-rec-wear {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+/* Handedness toggle in profile */
+.handedness-toggle {
+  display: flex;
+  gap: 0;
+  margin-top: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  width: fit-content;
+}
+
+.handedness-btn {
+  padding: 9px 20px;
+  border: none;
+  background: white;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+
+.handedness-active {
+  background: rgb(13, 202, 98);
+  color: white;
+}
+
+
+
+.wind-banner {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.4;
 }

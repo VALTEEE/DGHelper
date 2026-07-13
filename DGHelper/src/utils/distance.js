@@ -19,3 +19,15 @@ export function calculateDistance(coord1, coord2) {
 
   return R * c;
 }
+
+export function calculateBearing(from, to) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const lat1 = toRad(from.lat ?? from.latitude);
+  const lat2 = toRad(to.lat ?? to.latitude);
+  const dLng = toRad((to.lng ?? to.longitude) - (from.lng ?? from.longitude));
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}

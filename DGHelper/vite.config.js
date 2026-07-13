@@ -7,5 +7,10 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    proxy: {
+      '/auth': 'http://localhost:3000',
+      '/bag': 'http://localhost:3000',
+      '/profile': 'http://localhost:3000',
+    },
   },
 })
